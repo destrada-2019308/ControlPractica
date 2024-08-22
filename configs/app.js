@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import { config } from 'dotenv';
 
 import userRoutes from '../src/user/user.routes.js';
+import controlRoutes from '../src/control/control.routes.js'
 
 const app = express();
 config();
@@ -18,6 +19,7 @@ app.use(cors());
 app.use(helmet());
 
 app.use('/user', userRoutes);
+app.use('/control', controlRoutes)
 
 export const initServer = () => {
     app.listen(port, () => {

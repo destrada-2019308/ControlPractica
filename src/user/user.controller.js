@@ -21,12 +21,12 @@ export const getUsers = async(req, res) =>{
 
 export const createUser = async(req, res) =>{
     try {
-        const { name, username, email, password } = req.body;
+        const { name, username, email, phone, password } = req.body;
 
         //encriptar la password cuando se envie
 
-        const result = await pool.query('INSERT INTO users (name, username, email, password) values (?,?,?,?);', [name, username, email, password])
-        
+        const result = await pool.query('INSERT INTO users (name, username, email, phone, password) values (?,?,?,?,?);', [name, username, email, phone, password])
+            
         const [existingUser] = await pool.query(
             'SELECT * FROM users WHERE username = ? OR email = ?',
             [username, email]
