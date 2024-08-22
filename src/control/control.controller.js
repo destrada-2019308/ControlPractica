@@ -16,17 +16,15 @@ export const getData = async(req, res) =>{
     }
 }
 
-
-
 export const createControl = async(req, res) =>{
     try {
-        const { date, morning, afternoon, description, evaluations, codeUser } = req.body;
+        const { date, hour_morning_entry, hour_morning_exit, hour_afternoon_entry, hour_afternoon_exit, description, codeUser, encargado } = req.body;
+        const evaluations = '0'
+        const result = await pool.query("INSERT INTO practicControl (date, hour_morning_entry, hour_morning_exit, hour_afternoon_entry, hour_afternoon_exit, description, evaluations, codeUser, encargado) VALUES (?,?,?,?,?,?,?,?,?)", [date, hour_morning_entry, hour_morning_exit, hour_afternoon_entry, hour_afternoon_exit, description, evaluations, codeUser, encargado] )
 
-        const result = await pool.query("INSERT INTO practicControl (date, morning, afternoon, description, evaluations, codeUser) VALUES (?,?,?,?,?,?)", [date, morning, afternoon, description, evaluations, codeUser] )
+        BigInt.prototype.toJSON = function() { return this.toString()}
 
-        BigInt.prototype.toJson = function() { return this.toString()}
-
-        res.json ({ result })
+        res.send({ result })
 
     } catch (error) {
         console.error(error);
@@ -40,9 +38,14 @@ export const getControlByUser = async(req, res) =>{
 
         console.log(id);
 
-        const data = await pool.query('SELECT * FROM practicControl WHERE codeUser = ? ', [id])
-
-        return res.json({ data })
+        const data = await pool.query(` select codePracticControl, date, hour_morning_entry, hour_morning_exit, hour_afternoon_entry, hour_afternoon_exit, description, evaluations, codeUser from practicControl where codeUser = ${id}; `)
+        const user = await pool.query(` SELECT * FROM users WHERE codeUser = ${id}`)
+        
+        console.log(user);
+        console.log(data[0].date);
+        
+        
+        return res.send({ data, user })
 
     } catch (error) {
         console.error(error);
