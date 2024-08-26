@@ -20,6 +20,7 @@ export const initializeDatabase = async() =>{
       CREATE TABLE IF NOT EXISTS Users (
         codeUser INT AUTO_INCREMENT,
         name VARCHAR(100) NOT NULL,
+        lastname VARCHAR(100) NOT NULL,
         username VARCHAR(50) UNIQUE NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
         phone VARCHAR(8) UNIQUE NOT NULL,

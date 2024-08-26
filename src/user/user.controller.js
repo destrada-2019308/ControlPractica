@@ -3,40 +3,39 @@ import pool from '../../configs/db.js'
 import { checkPassword, encrypt } from '../utils/validator.js'
 import { generateJwt } from '../utils/jwt.js'
 
+const conn = await pool.getConnection();
+
 export const getUsers = async(req, res) =>{
-    let connection;
+    
     try {
+        const data = await conn.query('SELECT * FROM users;')
 
-        connection = await pool.getConnection()
-
-        const users = await connection.query('SELECT * FROM users')
-
-        if(!users ) return res.status(404).send({ message: 'No hay datos '})
-
-        return res.send({  users })
+        console.log(data);
+        console.log(data == undefined);
+        
+        if(data == undefined) return res.status(404).send({ message: 'Data is not found'})
+        
+        return res.send({  data })
     } catch (err) {
-        console.error('Error al obtener usuarios:', err); 
-        return res.status(500).send({ error: 'Error en el servidor', err }); 
-    } finally {
-        if (connection) connection.release(); 
+        throw err;
+      } finally {
+        if (conn) return conn.end();
+      }
     }
-}
 
 export const createUser = async(req, res) =>{
     try {
-        let { name, username, email, phone, password } = req.body;
+        let { name, lastname, username, email, phone, password, role } = req.body;
 
         //encriptar la password cuando se envie
 
-        const role = 'CLIENT'
-
         const newPassword = await encrypt(password)
         console.log( newPassword);
-        
+        let estado = 'ENABLE'
 
-        let result = await pool.query('INSERT INTO users (name, username, email, phone, password, role) values (?,?,?,?,?,?);', [name, username, email, phone, newPassword, role])
+        let result = await conn.query('INSERT INTO users (name, lastname, username, email, phone, password, role, estado) values (?,?,?,?,?,?,?,?);', [name, lastname, username, email, phone, newPassword, role, estado])
             
-        const [existingUser] = await pool.query(
+        const [existingUser] = await conn.query(
             'SELECT * FROM users WHERE username = ? OR email = ?',
             [username, email]
         );
@@ -53,25 +52,27 @@ export const createUser = async(req, res) =>{
         console.error(err);
         
         return res.status(500).send({ error: err.message})      
-    }
+    }finally {
+        if (conn) return conn.end();
+      }
 }
 
 export const createAdminDF = async(req, res) =>{
     try {
         //debe ir a ver si existe el usuario por defecto
-        const userExists = await pool.query(`SELECT * FROM users WHERE username = 'ADMIN'`)
+        const [userExists] = await pool.query(`SELECT * FROM users WHERE username = 'ADMIN'`)
 
-        //console.log(userExists);
+        console.log(userExists.username);
         
-
-        if(!userExists){
+        
+        if(userExists){
             console.log('El usuario por defecto ya existe ');
         }else{
             const encryptPassword = await encrypt('ADMIN')
             console.log(encryptPassword);
             
 
-            const newUser = await pool.query(`INSERT INTO users (name, username, email, phone, password, role) values ('ADMIN','ADMIN', 'ADMIN@gmail.com','11111111',?, 'ADMIN')`, encryptPassword )
+            const newUser = await pool.query(`INSERT INTO users (name, lastname, username, email, phone, password, role, estado) values ('ADMIN','ADMIN','ADMIN', 'ADMIN@gmail.com','11111111',?, 'ADMIN', 'ENABLE')`, encryptPassword )
             
             console.log(newUser);
             console.log('Admin created successfully');
@@ -140,3 +141,31 @@ export const addAttendant = async(req, res) =>{
 }
 
 
+export const getUserById = async(req, res) =>{
+    try {
+        let { id } = req.params
+        console.log('Id del usuario',id);
+        
+        const [user] = await pool.query(`SELECT * FROM users WHERE codeUser = ?`, id)
+        console.log(user);
+        
+        return res.send({ user })
+        
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: error})
+    }
+}
+
+export const updateUser = async(req, res) =>{
+    try {
+        let { id } = req.params
+        let { name, lastname, username, email, phone, role, estado } = req.body;
+        let data = await pool.query(`UPDATE users SET name = ?, lastname = ?, username = ?, email = ?, phone = ?, role = ?, estado = ? WHERE codeUser = ?`, [name, lastname, username, email, phone, role, estado, id])
+        BigInt.prototype.toJSON = function() { return this.toString()}
+        return res.send({ data })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: error})
+    }
+}

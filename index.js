@@ -10,4 +10,4 @@ app.get('/', (req, res) => {
 
 initServer()
 initializeDatabase();
-//createAdminDF()
+createAdminDF()
