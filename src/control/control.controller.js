@@ -22,6 +22,8 @@ export const createControl = async(req, res) =>{
     try {
         const { date, hour_morning_entry, hour_morning_exit, hour_afternoon_entry, hour_afternoon_exit, description, codePracticante } = req.body;
         const evaluations = '0'
+        console.log(codePracticante);
+        
         const result = await pool.query(`INSERT INTO practicControl (date, 
                                                             hour_morning_entry, 
                                                             hour_morning_exit, 
