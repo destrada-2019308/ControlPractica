@@ -24,11 +24,25 @@ export const initializeDatabase = async() =>{
         email VARCHAR(100) UNIQUE NOT NULL,
         phone VARCHAR(8) UNIQUE NOT NULL,
         password VARCHAR(256) NOT NULL,
-        role ENUM('ADMIN', 'CLIENT', 'ATTENDANT') NOT NULL,
+        role ENUM('ADMIN', 'CLIENT', 'MANAGER') NOT NULL,
         estado ENUM('ENABLE', 'DISABLED'),
         PRIMARY KEY PK_codeUser(codeUser)
       );
     `)
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS Practicante(
+        codePracticante INT NOT NULL AUTO_INCREMENT,
+        codeUser INT NOT NULL,
+        institucion VARCHAR(150) NOT NULL,
+        carrera VARCHAR(150) NOT NULL,
+        empresa VARCHAR(150) NOT NULL,
+        encargado INT NOT NULL,
+        PRIMARY KEY PK_codePracticante(codePracticante),
+        CONSTRAINT FK_Practicante_Users FOREIGN KEY(codeUser)
+          REFERENCES Users(codeUser)
+      );
+    `);
 
     await conn.query(`
       CREATE TABLE IF NOT EXISTS PracticControl(
@@ -40,11 +54,10 @@ export const initializeDatabase = async() =>{
           hour_afternoon_exit TIME NOT NULL,
           description VARCHAR (100) NOT NULL,
           evaluations CHAR(1),
-          codeUser INT NOT NULL,
-          encargado INT NOT NULL,
+          codePracticante INT NOT NULL,
           PRIMARY KEY PK_codePracticControl(codePracticControl),
-          CONSTRAINT FK_PracticControl_Users FOREIGN KEY(codeUser)
-            REFERENCES Users(codeUser)
+          CONSTRAINT FK_PracticControl_Practicante FOREIGN KEY(codePracticante)
+            REFERENCES Practicante(codePracticante)
         );
       `)
 

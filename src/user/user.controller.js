@@ -24,7 +24,7 @@ export const getUsers = async(req, res) =>{
 
 export const createUser = async(req, res) =>{
     try {
-        const { name, username, email, phone, password } = req.body;
+        let { name, username, email, phone, password } = req.body;
 
         //encriptar la password cuando se envie
 
@@ -34,7 +34,7 @@ export const createUser = async(req, res) =>{
         console.log( newPassword);
         
 
-        const result = await pool.query('INSERT INTO users (name, username, email, phone, password, role) values (?,?,?,?,?,?);', [name, username, email, phone, newPassword, role])
+        let result = await pool.query('INSERT INTO users (name, username, email, phone, password, role) values (?,?,?,?,?,?);', [name, username, email, phone, newPassword, role])
             
         const [existingUser] = await pool.query(
             'SELECT * FROM users WHERE username = ? OR email = ?',
@@ -121,5 +121,22 @@ export const login = async(req, res) =>{
 
 
 /* agregar un encargado */
+
+export const addAttendant = async(req, res) =>{
+    try {
+        const { role, codeUser } = req.body;
+        console.log('Role:',role,'User:', codeUser);
+        
+        const user = await pool.query(`SELECT * FROM users `)
+
+        const data = await pool.query('UPDATE users SET role = ? where codeUser = ? ', [role, codeUser])
+        BigInt.prototype.toJSON = function() { return this.toString()}
+        return res.send({ data })
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: error})
+    }
+}
 
 

@@ -6,6 +6,7 @@ import { config } from 'dotenv';
 
 import userRoutes from '../src/user/user.routes.js';
 import controlRoutes from '../src/control/control.routes.js'
+import practicingRoutes from '../src/practicante/practicante.routes.js'
 
 const app = express();
 config();
@@ -20,6 +21,7 @@ app.use(helmet());
 
 app.use('/user', userRoutes);
 app.use('/control', controlRoutes)
+app.use('/practicing', practicingRoutes)
 
 export const initServer = () => {
     app.listen(port, () => {
