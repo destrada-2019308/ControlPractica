@@ -1,7 +1,12 @@
 import pool from '../../configs/db.js'
+import nodemailer from 'nodemailer'
+import fs from 'fs'
+import path from 'path'
+import PDFDocument from 'pdfkit'
 
 import { checkPassword, encrypt } from '../utils/validator.js'
 import { generateJwt } from '../utils/jwt.js'
+
 
 const conn = await pool.getConnection();
 
@@ -10,8 +15,8 @@ export const getUsers = async(req, res) =>{
     try {
         const data = await conn.query('SELECT * FROM users;')
 
-        console.log(data);
-        console.log(data == undefined);
+        //console.log(data);
+        //console.log(data == undefined);
         
         if(data == undefined) return res.status(404).send({ message: 'Data is not found'})
         
@@ -25,36 +30,94 @@ export const getUsers = async(req, res) =>{
 
 export const createUser = async(req, res) =>{
     try {
-        let { name, lastname, username, email, phone, password, role } = req.body;
-
+        let { name, lastname, username, email, phone, password, role, estado } = req.body;
+        let allData =  [name, lastname, username, email, phone, password, role, estado]
+        let sendData = `Nombre: ${name}, Apellido: ${lastname}, Username: ${username}, Email: ${email}, Phone: ${phone}, Password: ${password}, Role: ${role}`
+        console.log(sendData);
+        
+        console.log('Esto es toda la data',allData);
+        
         //encriptar la password cuando se envie
-
         const newPassword = await encrypt(password)
-        console.log( newPassword);
-        let estado = 'ENABLE'
-
-        let result = await conn.query('INSERT INTO users (name, lastname, username, email, phone, password, role, estado) values (?,?,?,?,?,?,?,?);', [name, lastname, username, email, phone, newPassword, role, estado])
-            
+        
+        console.log(password);
+        console.log(newPassword);
+        console.log(email);
+        
         const [existingUser] = await conn.query(
             'SELECT * FROM users WHERE username = ? OR email = ?',
             [username, email]
         );
+        console.log(existingUser);
+        
+        
+        if (existingUser){
+            console.error('Error with username or email La prueba');
+            return res.status(400).send({ error: 'Username or Email already exists' });
+            
+            
+        } else {
+            let result = await conn.query('INSERT INTO users (name, lastname, username, email, phone, password, role, estado) values (?,?,?,?,?,?,?,?);', [name, lastname, username, email, phone, newPassword, role, estado])
+            console.log('Esto es result',result);
+            let to = email
+            let subject = 'Text for default'
+            let text = `Estos son sus datos : \b ${sendData} \b Ingrese a nuestra pagina y loggeese con su username y su password `
+            emailValidate(to, subject, text)
+            BigInt.prototype.toJSON = function() { return this.toString() }
 
-
-
-        if (existingUser.length > 0) {
-            return res.status(400).json({ error: 'Username or Email already exists' });
+        return res.send({ result})
         }
-        BigInt.prototype.toJSON = function() { return this.toString() }
 
-        res.json({ result})
+        
     } catch (err) {
         console.error(err);
-        
         return res.status(500).send({ error: err.message})      
     }finally {
         if (conn) return conn.end();
       }
+}
+
+const emailValidate = async(to, subject, text) =>{
+    let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "estradajuarezdiegorene@gmail.com",
+          pass: "bvpy qbeh tqwc jvdy",
+        },
+      });
+    
+      // Set up email options
+      let mailOptions = {
+        from: "estradajuarezdiegorene@gmail.com",
+        to: to,
+        subject: subject,
+        text: text,
+      };
+    
+      // Send the email
+      console.log(mailOptions);
+      
+      try {
+        let info = await transporter.sendMail(mailOptions);
+        console.log("Email sent: " + info.response);
+        return info;
+      } catch (error) {
+        console.error("Error sending email:", error);
+        throw error;
+      }
+}
+
+export const validateEmail = async(req, res) =>{
+    try {
+        const { to, subject, text } = req.body;
+        console.log(to, subject, text);
+        
+        let info = await emailValidate(to, subject, text)
+        return res.send({ message: `Email enviado a : ${to} `, info})
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send("Error sending email");
+    }
 }
 
 export const createAdminDF = async(req, res) =>{
@@ -62,7 +125,7 @@ export const createAdminDF = async(req, res) =>{
         //debe ir a ver si existe el usuario por defecto
         const [userExists] = await pool.query(`SELECT * FROM users WHERE username = 'ADMIN'`)
 
-        console.log(userExists.username);
+        //console.log(userExists.username);
         
         
         if(userExists){
@@ -156,6 +219,95 @@ export const getUserById = async(req, res) =>{
         return res.status(500).send({ message: error})
     }
 }
+
+export const historial = async(req, res) => {
+    try {
+        const { id } = req.params;
+        const allData = await pool.query(`
+            SELECT u.name, u.username, u.email, u.phone, u.role, u.estado, 
+                   p.institucion, p.carrera, p.empresa, p.encargado,
+                   pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
+                   pc.hour_afternoon_entry, pc.hour_afternoon_exit, 
+                   pc.description, pc.evaluations
+            FROM PracticControl pc
+            JOIN Practicante p ON pc.codePracticante = p.codePracticante
+            JOIN Users u ON p.codeUser = u.codeUser 
+            WHERE u.codeUser = ?;
+        `, [id]);
+
+        if (!allData.length) {
+            return res.status(404).send({ message: "No data found for the specified user" });
+        }
+
+        // Crear un nuevo documento PDF
+        const doc = new PDFDocument();
+        const filePath = path.join( `historial_${id}.pdf`);
+        doc.pipe(fs.createWriteStream(filePath)); // Guardar el PDF en el sistema de archivos
+
+        // Título del documento
+        doc.fontSize(20).text(`Historial del Usuario: ${allData[0].name}`, { align: 'center' });
+
+        doc.moveDown(); // Espacio
+
+        // Datos del Usuario
+        doc.fontSize(14).text(`Nombre: ${allData[0].name}`);
+        doc.text(`Username: ${allData[0].username}`);
+        doc.text(`Email: ${allData[0].email}`);
+        doc.text(`Teléfono: ${allData[0].phone}`);
+        doc.text(`Rol: ${allData[0].role}`);
+        doc.text(`Estado: ${allData[0].estado}`);
+
+        doc.moveDown();
+
+        // Datos del Practicante
+        doc.fontSize(16).text('Datos del Practicante:', { underline: true });
+        doc.fontSize(14).text(`Institución: ${allData[0].institucion}`);
+        doc.text(`Carrera: ${allData[0].carrera}`);
+        doc.text(`Empresa: ${allData[0].empresa}`);
+        doc.text(`Encargado: ${allData[0].encargado}`);
+
+        doc.moveDown();
+
+        // Detalles del Control de Práctica
+        doc.fontSize(16).text('Control de Práctica:', { underline: true });
+
+        allData.forEach((control, index) => {
+            doc.moveDown();
+            doc.fontSize(14).text(`Fecha: ${new Date(control.date).toLocaleDateString()}`);
+            doc.text(`Entrada (Mañana): ${control.hour_morning_entry}`);
+            doc.text(`Salida (Mañana): ${control.hour_morning_exit}`);
+            doc.text(`Entrada (Tarde): ${control.hour_afternoon_entry}`);
+            doc.text(`Salida (Tarde): ${control.hour_afternoon_exit}`);
+            doc.text(`Descripción: ${control.description}`);
+            doc.text(`Evaluación: ${control.evaluations}`);
+            if (index < allData.length - 1) {
+                doc.addPage(); // Añadir nueva página para cada control si hay más de uno
+            }
+        });
+
+        // Finalizar el documento
+        doc.end();
+
+        // Enviar el PDF como respuesta
+        doc.on('finish', () => {
+            res.download(filePath, (err) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send({ message: 'Error sending file' });
+                }
+
+                // Opcional: Eliminar el archivo después de enviarlo
+                fs.unlink(filePath, (err) => {
+                    if (err) console.error('Error deleting file:', err);
+                });
+            });
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: error.message });
+    }
+};
 
 export const updateUser = async(req, res) =>{
     try {
