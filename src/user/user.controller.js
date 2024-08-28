@@ -234,80 +234,77 @@ export const historial = async(req, res) => {
             JOIN Users u ON p.codeUser = u.codeUser 
             WHERE u.codeUser = ?;
         `, [id]);
-
+            console.log(allData)
+            
         if (!allData.length) {
-            return res.status(404).send({ message: "No data found for the specified user" });
+            return res.status(404).send({ message: "No data found for the specified user" })
         }
 
-        // Crear un nuevo documento PDF
-        const doc = new PDFDocument();
-        const filePath = path.join( `historial_${id}.pdf`);
-        doc.pipe(fs.createWriteStream(filePath)); // Guardar el PDF en el sistema de archivos
+        const doc = new PDFDocument()
+        const filePath = path.join( `historial_${id}.pdf`)
+        doc.pipe(fs.createWriteStream(filePath))
+        doc.fontSize(20).text(`Historial del Usuario: ${allData[0].name}`, { align: 'center' })
 
-        // Título del documento
-        doc.fontSize(20).text(`Historial del Usuario: ${allData[0].name}`, { align: 'center' });
+        doc.moveDown()
+        doc.fontSize(14).text(`Nombre: ${allData[0].name}`)
+        doc.text(`Username: ${allData[0].username}`)
+        doc.text(`Email: ${allData[0].email}`)
+        doc.text(`Teléfono: ${allData[0].phone}`)
+        doc.text(`Rol: ${allData[0].role}`)
+        doc.text(`Estado: ${allData[0].estado}`)
 
-        doc.moveDown(); // Espacio
+        doc.moveDown()
+        doc.fontSize(16).text('Datos del Practicante:', { underline: true })
+        doc.fontSize(14).text(`Institución: ${allData[0].institucion}`)
+        doc.text(`Carrera: ${allData[0].carrera}`)
+        doc.text(`Empresa: ${allData[0].empresa}`)
+        doc.text(`Encargado: ${allData[0].encargado}`)
 
-        // Datos del Usuario
-        doc.fontSize(14).text(`Nombre: ${allData[0].name}`);
-        doc.text(`Username: ${allData[0].username}`);
-        doc.text(`Email: ${allData[0].email}`);
-        doc.text(`Teléfono: ${allData[0].phone}`);
-        doc.text(`Rol: ${allData[0].role}`);
-        doc.text(`Estado: ${allData[0].estado}`);
+        doc.moveDown()
 
-        doc.moveDown();
-
-        // Datos del Practicante
-        doc.fontSize(16).text('Datos del Practicante:', { underline: true });
-        doc.fontSize(14).text(`Institución: ${allData[0].institucion}`);
-        doc.text(`Carrera: ${allData[0].carrera}`);
-        doc.text(`Empresa: ${allData[0].empresa}`);
-        doc.text(`Encargado: ${allData[0].encargado}`);
-
-        doc.moveDown();
-
-        // Detalles del Control de Práctica
-        doc.fontSize(16).text('Control de Práctica:', { underline: true });
+        doc.fontSize(16).text('Control de Práctica:', { underline: true })
 
         allData.forEach((control, index) => {
             doc.moveDown();
-            doc.fontSize(14).text(`Fecha: ${new Date(control.date).toLocaleDateString()}`);
-            doc.text(`Entrada (Mañana): ${control.hour_morning_entry}`);
-            doc.text(`Salida (Mañana): ${control.hour_morning_exit}`);
-            doc.text(`Entrada (Tarde): ${control.hour_afternoon_entry}`);
-            doc.text(`Salida (Tarde): ${control.hour_afternoon_exit}`);
-            doc.text(`Descripción: ${control.description}`);
-            doc.text(`Evaluación: ${control.evaluations}`);
-            if (index < allData.length - 1) {
-                doc.addPage(); // Añadir nueva página para cada control si hay más de uno
-            }
+            doc.fontSize(14).text(`Fecha: ${new Date(control.date).toLocaleDateString()}`)
+            doc.text(`Entrada (Mañana): ${control.hour_morning_entry}`)
+            doc.text(`Salida (Mañana): ${control.hour_morning_exit}`)
+            doc.text(`Entrada (Tarde): ${control.hour_afternoon_entry}`)
+            doc.text(`Salida (Tarde): ${control.hour_afternoon_exit}`)
+            doc.text(`Descripción: ${control.description}`)
+            doc.text(`Evaluación: ${control.evaluations}`)
+        
         });
-
-        // Finalizar el documento
         doc.end();
-
-        // Enviar el PDF como respuesta
         doc.on('finish', () => {
             res.download(filePath, (err) => {
                 if (err) {
                     console.error(err);
-                    return res.status(500).send({ message: 'Error sending file' });
+                    return res.status(500).send({ message: 'Error sending file' })
                 }
 
-                // Opcional: Eliminar el archivo después de enviarlo
                 fs.unlink(filePath, (err) => {
-                    if (err) console.error('Error deleting file:', err);
+                    if (err) console.error('Error deleting file:', err)
                 });
             });
         });
 
+        res.download(filePath, `historial_${id}.pdf`, (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send({ message: 'Error sending file' });
+            }
+
+            fs.unlink(filePath, (err) => {
+                if (err) console.error('Error deleting file:', err);
+            });
+        });
+
     } catch (error) {
-        console.error(error);
-        return res.status(500).send({ message: error.message });
+        console.error(error)
+        return res.status(500).send({ message: error.message })
     }
-};
+}
 
 export const updateUser = async(req, res) =>{
     try {

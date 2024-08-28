@@ -24,6 +24,7 @@ export const getData = async(req, res) =>{
 }
 
 export const createControl = async(req, res) =>{
+    let conn = await pool.getConnection()
     try {
         const { date, hour_morning_entry, hour_morning_exit, hour_afternoon_entry, hour_afternoon_exit, description, codePracticante } = req.body;
         const evaluations = '0'
@@ -46,8 +47,10 @@ export const createControl = async(req, res) =>{
 
     } catch (error) {
         console.error(error);
-        return error
-    }
+        return res.status(500).send({ message: error})
+    }finally {
+        if (conn) return conn.end();
+      }
 }
 
 export const getControlByUser = async(req, res) =>{
@@ -119,8 +122,8 @@ export const evaluation = async(req, res) =>{
         const data = await pool.query('UPDATE practicControl SET evaluations = ? where codePracticante = ? AND codePracticControl =?', [ evaluations, codePracticante, codePracticControl])
         const result = await pool.query(`
             SELECT u.name, u.username, u.email, u.phone, u.role, u.estado, 
-                   p.institucion, p.carrera, p.empresa, 
-                   pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
+                   p.codePracticante, p.institucion, p.carrera, p.empresa, 
+                   pc.codePracticControl, pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
                    pc.hour_afternoon_entry, pc.hour_afternoon_exit, 
                    pc.description, pc.evaluations
             FROM PracticControl pc
@@ -148,8 +151,8 @@ export const allData = async(req, res) =>{
         const { id } = req.params
         const data = await pool.query(`
             SELECT u.codeUser, u.name, u.username, u.email, u.phone, u.role, u.estado, 
-                   p.institucion, p.carrera, p.empresa, p.encargado,
-                   pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
+                   p.codePracticante, p.institucion, p.carrera, p.empresa, p.encargado,
+                   pc.codePracticControl, pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
                    pc.hour_afternoon_entry, pc.hour_afternoon_exit, 
                    pc.description, pc.evaluations
             FROM PracticControl pc

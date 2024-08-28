@@ -29,7 +29,7 @@ export const getManager = async (req, res) => {
 
         const manager = await pool.query(`SELECT * FROM users where role = 'MANAGER'`)
         console.log(manager);
-
+        if ( manager == undefined) return res.status(401).send({ message: 'que pedo?' })
         if (!manager) return res.status(401).send({ message: 'que pedo?' })
         return res.send({ manager })
 
@@ -46,11 +46,13 @@ export const getPracticingById = async (req, res) => {
     try {
         let { id } = req.params;
         console.log('Id de params',id);
-
-        let [practicing] = await pool.query(`select * from Practicante where codeUser = ?`, id)
-        console.log(practicing.length === 0);
         
-        if(practicing.length === 0){
+        let [practicing] = await pool.query(`select * from Practicante where codeUser = ?`, id)
+        console.log(practicing);
+        
+        console.log(practicing == undefined);
+        
+        if(practicing == undefined){
             return res.status(404).send({ message: 'Data is not found'})
         }else{
             
