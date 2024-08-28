@@ -5,8 +5,9 @@ import helmet from 'helmet';
 import { config } from 'dotenv';
 
 import userRoutes from '../src/user/user.routes.js';
-import controlRoutes from '../src/control/control.routes.js'
-import practicingRoutes from '../src/practicante/practicante.routes.js'
+import schoolRoutes from '../src/school/school.routes.js'
+import careerRoutes from '../src/career/career.routes.js'
+import workstationRoutes from '../src/workstation/workstation.routes.js'
 
 const app = express();
 config();
@@ -20,8 +21,9 @@ app.use(cors());
 app.use(helmet());
 
 app.use('/user', userRoutes);
-app.use('/control', controlRoutes)
-app.use('/practicing', practicingRoutes)
+app.use('/school', schoolRoutes)
+app.use('/career', careerRoutes)
+app.use('/workstation', workstationRoutes)
 
 export const initServer = () => {
     app.listen(port, () => {

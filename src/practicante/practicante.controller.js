@@ -10,7 +10,8 @@ export const addPracticing = async (req, res) => {
         
         let result = await pool.query('INSERT INTO practicante (codeUser, institucion, carrera, empresa, encargado) VALUES (?,?,?,?,?)', [codeUser, institucion, carrera, empresa, encargado])
         BigInt.prototype.toJSON = function () { return this.toString() }
-
+        console.log(result);
+        
         if (!result) return res.status(404).send({ message: 'Faltan datos' })
 
         return res.send({ result })

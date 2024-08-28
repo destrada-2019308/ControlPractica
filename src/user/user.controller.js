@@ -13,10 +13,7 @@ const conn = await pool.getConnection();
 export const getUsers = async(req, res) =>{
     
     try {
-        const data = await conn.query('SELECT * FROM users;')
-
-        //console.log(data);
-        //console.log(data == undefined);
+        const data = await conn.query(`SELECT * FROM users WHERE state = 'ENABLE';`)
         
         if(data == undefined) return res.status(404).send({ message: 'Data is not found'})
         
@@ -32,7 +29,7 @@ export const createUser = async(req, res) =>{
     try {
         let { name, lastname, username, email, phone, password, role, estado } = req.body;
         let allData =  [name, lastname, username, email, phone, password, role, estado]
-        let sendData = `Nombre: ${name}, Apellido: ${lastname}, Username: ${username}, Email: ${email}, Phone: ${phone}, Password: ${password}, Role: ${role}`
+        let sendData = `\b Nombre: ${name}, Apellido: ${lastname}, Username: ${username}, Email: ${email}, Phone: ${phone}, Password: ${password}, Role: ${role} \b`
         console.log(sendData);
         
         console.log('Esto es toda la data',allData);
@@ -135,10 +132,10 @@ export const createAdminDF = async(req, res) =>{
             console.log(encryptPassword);
             
 
-            const newUser = await pool.query(`INSERT INTO users (name, lastname, username, email, phone, password, role, estado) values ('ADMIN','ADMIN','ADMIN', 'ADMIN@gmail.com','11111111',?, 'ADMIN', 'ENABLE')`, encryptPassword )
+            const newUser = await pool.query(`INSERT INTO users (name, lastname, username, email, phone, password, role, state) values ('ADMIN','ADMIN','ADMIN', 'ADMIN@gmail.com','11111111',?, 'ADMIN', 'ENABLE')`, encryptPassword )
             
-            console.log(newUser);
-            console.log('Admin created successfully');
+            //console.log(newUser);
+            //console.log('Admin created successfully');
             
         }
 
@@ -164,11 +161,11 @@ export const login = async(req, res) =>{
         if(user && await checkPassword(password, user.password)){
             const [userLogged] = await pool.query("SELECT * FROM users WHERE username = ?;", [username])
 
-            console.log(userLogged);
+            //console.log(userLogged);
 
             let token = await generateJwt(userLogged)
         
-            console.log(token);
+            //console.log(token);
             
             return res.send({ message: `Welcome ${userLogged.name}`, userLogged, token})
             
@@ -182,6 +179,7 @@ export const login = async(req, res) =>{
         return res.status(500).send({ error: true, err})
     }
 } 
+
 
 
 /* agregar un encargado */
