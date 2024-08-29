@@ -20,7 +20,7 @@ export const addPracticing = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally {
-        if (conn) return conn.end();
+         conn.end();
     }
 }
 
@@ -38,7 +38,7 @@ export const getManager = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally {
-        if (conn) return conn.end();
+       conn.end();
     }
 }
 
@@ -71,7 +71,7 @@ export const getPracticingById = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally {
-        if (conn) return conn.end();
+        conn.end();
     }
 }
 

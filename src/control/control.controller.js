@@ -19,7 +19,7 @@ export const getData = async(req, res) =>{
         console.error(error);
         return error
     }finally {
-        if (conn) return conn.end();
+         conn.end();
       }
 }
 
@@ -30,7 +30,7 @@ export const createControl = async(req, res) =>{
         const evaluations = '0'
         console.log(codePracticante);
         
-        const result = await pool.query(`INSERT INTO practicControl (date, 
+        const result = await conn.query(`INSERT INTO practicControl (date, 
                                                             hour_morning_entry, 
                                                             hour_morning_exit, 
                                                             hour_afternoon_entry, 
@@ -49,12 +49,12 @@ export const createControl = async(req, res) =>{
         console.error(error);
         return res.status(500).send({ message: error})
     }finally {
-        if (conn) return conn.end();
+        conn.end();
       }
 }
 
 export const getControlByUser = async(req, res) =>{
-    
+    const conn = await pool.getConnection();
     try {
         let { id } = req.params;
         console.log(id);
@@ -92,16 +92,17 @@ export const getControlByUser = async(req, res) =>{
     } catch (error) {
         throw err;
     }finally {
-        if (conn) return conn.end();
+         conn.end();
       }
 }
 
 export const getControlManaClient = async(req, res) =>{
+    const conn = await pool.getConnection();
     try {
         let { id } = req.params;
         //console.log(id);
         
-        const data = await pool.query(`SELECT * FROM practicante where encargado = ?`, id)
+        const data = await conn.query(`SELECT * FROM practicante where encargado = ?`, id)
         //console.log(data);
 
         
@@ -110,17 +111,20 @@ export const getControlManaClient = async(req, res) =>{
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: error })
+    } finally{
+        conn.end()
     }
 }
 
 export const evaluation = async(req, res) =>{
+    const conn = await pool.getConnection();
     try {
         const {evaluations, codePracticante, codePracticControl} = req.body;
         //console.log(evaluations, codePracticante, codePracticControl);
         
         
-        const data = await pool.query('UPDATE practicControl SET evaluations = ? where codePracticante = ? AND codePracticControl =?', [ evaluations, codePracticante, codePracticControl])
-        const result = await pool.query(`
+        const data = await conn.query('UPDATE practicControl SET evaluations = ? where codePracticante = ? AND codePracticControl =?', [ evaluations, codePracticante, codePracticControl])
+        const result = await conn.query(`
             SELECT u.name, u.username, u.email, u.phone, u.role, u.estado, 
                    p.codePracticante, p.institucion, p.carrera, p.empresa, 
                    pc.codePracticControl, pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
@@ -143,13 +147,16 @@ export const evaluation = async(req, res) =>{
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: error })
+    }finally{
+        conn.end()
     }
 }
 
 export const allData = async(req, res) =>{
+    const conn = await pool.getConnection();
      try {
         const { id } = req.params
-        const data = await pool.query(`
+        const data = await conn.query(`
             SELECT u.codeUser, u.name, u.username, u.email, u.phone, u.role, u.estado, 
                    p.codePracticante, p.institucion, p.carrera, p.empresa, p.encargado,
                    pc.codePracticControl, pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
@@ -168,6 +175,8 @@ export const allData = async(req, res) =>{
      } catch (error) {
         console.error(error);
         return res.status(500).send({ message: error })
+     } finally{
+        conn.end()
      }
 }
      

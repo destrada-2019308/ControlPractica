@@ -8,10 +8,10 @@ import { checkPassword, encrypt } from '../utils/validator.js'
 import { generateJwt } from '../utils/jwt.js'
 
 
-const conn = await pool.getConnection();
-
 export const getUsers = async(req, res) =>{
     
+const conn = await pool.getConnection();
+
     try {
         const data = await conn.query(`SELECT * FROM users WHERE state = 'ENABLE';`)
         
@@ -21,11 +21,14 @@ export const getUsers = async(req, res) =>{
     } catch (err) {
         throw err;
       } finally {
-        if (conn) return conn.end();
+        conn.end();
       }
     }
 
 export const createUser = async(req, res) =>{
+    
+const conn = await pool.getConnection();
+
     try {
         let { name, lastname, username, email, phone, password, role, estado } = req.body;
         let allData =  [name, lastname, username, email, phone, password, role, estado]
@@ -70,7 +73,7 @@ export const createUser = async(req, res) =>{
         console.error(err);
         return res.status(500).send({ error: err.message})      
     }finally {
-        if (conn) return conn.end();
+        conn.end();
       }
 }
 
@@ -118,9 +121,10 @@ export const validateEmail = async(req, res) =>{
 }
 
 export const createAdminDF = async(req, res) =>{
+    const conn = await pool.getConnection();
     try {
         //debe ir a ver si existe el usuario por defecto
-        const [userExists] = await pool.query(`SELECT * FROM users WHERE username = 'ADMIN'`)
+        const [userExists] = await conn.query(`SELECT * FROM users WHERE username = 'ADMIN'`)
 
         //console.log(userExists.username);
         
@@ -132,7 +136,7 @@ export const createAdminDF = async(req, res) =>{
             console.log(encryptPassword);
             
 
-            const newUser = await pool.query(`INSERT INTO users (name, lastname, username, email, phone, password, role, state) values ('ADMIN','ADMIN','ADMIN', 'ADMIN@gmail.com','11111111',?, 'ADMIN', 'ENABLE')`, encryptPassword )
+            const newUser = await conn.query(`INSERT INTO users (name, lastname, username, email, phone, password, role, state) values ('ADMIN','ADMIN','ADMIN', 'ADMIN@gmail.com','11111111',?, 'ADMIN', 'ENABLE')`, encryptPassword )
             
             //console.log(newUser);
             //console.log('Admin created successfully');
@@ -142,14 +146,17 @@ export const createAdminDF = async(req, res) =>{
     } catch (error) {
         console.error(error);
         return error
+    } finally{
+        conn.end()
     }
 }
 
 export const login = async(req, res) =>{
+    const conn = await pool.getConnection();
     try {
         const { username, password } = req.body;
 
-        const [user] = await pool.query(`SELECT * FROM users WHERE username = ?`, username)
+        const [user] = await conn.query(`SELECT * FROM users WHERE username = ?`, username)
         
        //console.log(user == undefined);
         
@@ -159,7 +166,7 @@ export const login = async(req, res) =>{
         
 
         if(user && await checkPassword(password, user.password)){
-            const [userLogged] = await pool.query("SELECT * FROM users WHERE username = ?;", [username])
+            const [userLogged] = await conn.query("SELECT * FROM users WHERE username = ?;", [username])
 
             //console.log(userLogged);
 
@@ -177,6 +184,8 @@ export const login = async(req, res) =>{
     } catch (err) {
         console.error(err);
         return res.status(500).send({ error: true, err})
+    } finally{
+        conn.end
     }
 } 
 
@@ -185,29 +194,33 @@ export const login = async(req, res) =>{
 /* agregar un encargado */
 
 export const addAttendant = async(req, res) =>{
+    const conn = await pool.getConnection();
     try {
         const { role, codeUser } = req.body;
         console.log('Role:',role,'User:', codeUser);
         
-        const user = await pool.query(`SELECT * FROM users `)
+        const user = await conn.query(`SELECT * FROM users `)
 
-        const data = await pool.query('UPDATE users SET role = ? where codeUser = ? ', [role, codeUser])
+        const data = await conn.query('UPDATE users SET role = ? where codeUser = ? ', [role, codeUser])
         BigInt.prototype.toJSON = function() { return this.toString()}
         return res.send({ data })
 
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: error})
+    } finally{
+        conn.end()
     }
 }
 
 
 export const getUserById = async(req, res) =>{
+    const conn = await pool.getConnection();
     try {
         let { id } = req.params
         console.log('Id del usuario',id);
         
-        const [user] = await pool.query(`SELECT * FROM users WHERE codeUser = ?`, id)
+        const [user] = await conn.query(`SELECT * FROM users WHERE codeUser = ?`, id)
         console.log(user);
         
         return res.send({ user })
@@ -215,13 +228,16 @@ export const getUserById = async(req, res) =>{
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: error})
+    } finally{
+        conn.end()
     }
 }
 
 export const historial = async(req, res) => {
+    const conn = await pool.getConnection();
     try {
         const { id } = req.params;
-        const allData = await pool.query(`
+        const allData = await conn.query(`
             SELECT u.name, u.username, u.email, u.phone, u.role, u.estado, 
                    p.institucion, p.carrera, p.empresa, p.encargado,
                    pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
@@ -301,18 +317,23 @@ export const historial = async(req, res) => {
     } catch (error) {
         console.error(error)
         return res.status(500).send({ message: error.message })
+    }finally{
+        conn.end()
     }
 }
 
 export const updateUser = async(req, res) =>{
+    const conn = await pool.getConnection();
     try {
         let { id } = req.params
         let { name, lastname, username, email, phone, role, estado } = req.body;
-        let data = await pool.query(`UPDATE users SET name = ?, lastname = ?, username = ?, email = ?, phone = ?, role = ?, estado = ? WHERE codeUser = ?`, [name, lastname, username, email, phone, role, estado, id])
+        let data = await conn.query(`UPDATE users SET name = ?, lastname = ?, username = ?, email = ?, phone = ?, role = ?, estado = ? WHERE codeUser = ?`, [name, lastname, username, email, phone, role, estado, id])
         BigInt.prototype.toJSON = function() { return this.toString()}
         return res.send({ data })
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: error})
+    }finally{
+        conn.end()
     }
 }

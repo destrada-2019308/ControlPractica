@@ -128,6 +128,7 @@ export const initializeDatabase = async () => {
       );
     `);
 
+
     console.log("Base de datos y tablas creadas exitosamente.")
   } catch (err) {
     console.error("Error al crear la base de datos o tablas:", err)
