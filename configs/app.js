@@ -9,6 +9,8 @@ import schoolRoutes from '../src/school/school.routes.js'
 import careerRoutes from '../src/career/career.routes.js'
 import workstationRoutes from '../src/workstation/workstation.routes.js'
 import managmentsRoutes from '../src/managments/managments.routes.js'
+import supervisorRoutes from '../src/supervisor/supervisor.routes.js'
+import practicingRoutes from '../src/practicante/practicante.routes.js'
 
 const app = express();
 config();
@@ -26,6 +28,8 @@ app.use('/school', schoolRoutes)
 app.use('/career', careerRoutes)
 app.use('/workstation', workstationRoutes)
 app.use('/managments', managmentsRoutes)
+app.use('/supervisor', supervisorRoutes)
+app.use('/practicing', practicingRoutes)
 
 export const initServer = () => {
     app.listen(port, () => {

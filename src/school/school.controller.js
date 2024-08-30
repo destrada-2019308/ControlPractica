@@ -25,16 +25,16 @@ export const addSchool = async(req, res) =>{
     let conn = await pool.getConnection()
     try {
         
-        let { name, description, address } = req.body;
-        console.log(name, description, address);
+        let { nameSchool, descriptionSchool, addressSchool } = req.body;
+        console.log(nameSchool, descriptionSchool, addressSchool);
         
-        const existingSchool = await conn.query(`SELECT * FROM School WHERE name = ?;` , name)
+        const existingSchool = await conn.query(`SELECT * FROM School WHERE nameSchool = ?;` , nameSchool)
         BigInt.prototype.toJSON = function() { return this.toString()}
         console.log(existingSchool);
         if (existingSchool.length > 0) return res.status(400).send({ message: 'This school already exists' });
         
         
-        const data = await conn.query(`INSERT INTO school (name, description, address) VALUES (?,?,?) ;`, [name, description, address])
+        const data = await conn.query(`INSERT INTO school (nameSchool, descriptionSchool, addressSchool) VALUES (?,?,?) ;`, [nameSchool, descriptionSchool, addressSchool])
 
         if(data == undefined) return res.status(404).send({ message: 'Data is not found'})
 
@@ -55,9 +55,9 @@ export const updateSchool = async(req, res) =>{
         console.log(id);
         
         if(id === undefined) return res.status(404).send({ message: 'Id is not defined'})
-        let { name, description, address } = req.body;
+        let { nameSchool, descriptionSchool, addressSchool } = req.body;
         BigInt.prototype.toJSON = function() { return this.toString()}
-        let data = await conn.query(`UPDATE school SET name = ?, description = ?, address = ? WHERE codeSchool = ?`, [name, description, address, id])
+        let data = await conn.query(`UPDATE school SET nameSchool = ?, descriptionSchool = ?, addressSchool = ? WHERE codeSchool = ?`, [ nameSchool, descriptionSchool, addressSchool, id])
 
         if(data == undefined) return res.status(404).send({ message: 'Data is not defined' })
 

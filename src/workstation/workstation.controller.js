@@ -23,15 +23,15 @@ export const getWorkstation = async (req, res) => {
 export const addWorkstation = async (req, res) => {
     const conn = await pool.getConnection();
     try {
-        let { name, description } = req.body;
-        console.log(name, description);
+        let { nameWorkstation, descriptionWorkstation } = req.body;
+        console.log(nameWorkstation, descriptionWorkstation);
         
         
-        const existingWorkstation = await conn.query('SELECT * FROM Workstation WHERE name = ?;', name)
+        const existingWorkstation = await conn.query('SELECT * FROM Workstation WHERE nameWorkstation = ?;', nameWorkstation)
         BigInt.prototype.toJSON = function() { return this.toString()}
         if(existingWorkstation.length > 0) return res.status(400).send({ message: 'This workstation alredy exists'})
 
-        const data = await conn.query(`INSERT INTO Workstation (name, description ) VALUES (?,?);`,[name, description])
+        const data = await conn.query(`INSERT INTO Workstation (nameWorkstation, descriptionWorkstation ) VALUES (?,?);`,[nameWorkstation, descriptionWorkstation])
         console.log(data);
         
         if(data == undefined) return res.status(404).send({ message: 'No hay datos'})
@@ -51,9 +51,9 @@ export const updateWorkstation = async (req, res) => {
     try {
         let { id } = req.params;
 
-        let { name, description } = req.body;
+        let { nameWorkstation, descriptionWorkstation } = req.body;
 
-        let data = await conn.query(`UPDATE workstation SET name = ?, description = ? WHERE codeWorkstation = ?; `, [name, description, id])
+        let data = await conn.query(`UPDATE workstation SET nameWorkstation = ?, descriptionWorkstation = ? WHERE codeWorkstation = ?; `, [nameWorkstation, descriptionWorkstation, id])
         BigInt.prototype.toJSON = function() { return this.toString()}
         if(data == undefined) return res.status(404).send({ message: 'Data is not found'})
 

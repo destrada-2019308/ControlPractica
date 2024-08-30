@@ -4,7 +4,7 @@ USE practiceControl;
 
 CREATE TABLE IF NOT EXISTS Users (
     codeUser INT AUTO_INCREMENT,
-    name VARCHAR(125) NOT NULL,
+    nameUser VARCHAR(125) NOT NULL,
     lastname VARCHAR(125) NOT NULL,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(125) UNIQUE NOT NULL,
@@ -17,30 +17,30 @@ CREATE TABLE IF NOT EXISTS Users (
 
 CREATE TABLE IF NOT EXISTS School(
     codeSchool INT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(125),
-    description VARCHAR(125),
-    address VARCHAR(125),
+    nameSchool VARCHAR(125),
+    descriptionSchool VARCHAR(125),
+    addressSchool VARCHAR(125),
     PRIMARY KEY PK_codeSchool(codeSchool)
 );
 
 CREATE TABLE IF NOT EXISTS Career(
     codeCareer INT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(125),
-    description VARCHAR(125),
+    nameCareer VARCHAR(125),
+    descriptionCareer VARCHAR(125),
     PRIMARY KEY PK_codeCareer(codeCareer)
 );
 
 CREATE TABLE IF NOT EXISTS Workstation(
     codeWorkstation INT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(125),
-    description VARCHAR(125),
+    nameWorkstation VARCHAR(125),
+    descriptionWorkstation VARCHAR(125),
     PRIMARY KEY PK_codeWorkstation(codeWorkstation)
 );
 
 CREATE TABLE IF NOT EXISTS Managments(
     codeManagments INT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(125),
-    description VARCHAR(125),
+    nameManagments VARCHAR(125),
+    descriptionManagments VARCHAR(125),
     PRIMARY KEY PK_codeManagments(codeManagments)
 );
 
@@ -65,15 +65,20 @@ CREATE TABLE IF NOT EXISTS Practicing(
     codePracticing INT AUTO_INCREMENT,
     date_init DATE NOT NULL,
     date_finish DATE NOT NULL,
-    practice_hrs TIME NOT NULL,
+    practice_hrs INT NOT NULL,
     codeSupervisor INT NOT NULL,
     codeUser INT NOT NULL,
     codeSchool INT NOT NULL,
     codeCareer INT NOT NULL,
     PRIMARY KEY PK_codePracticing(codePracticing),
-    CONSTRAINT FK_Practicante_Users FOREIGN KEY(codeUser) REFERENCES Users(codeUser),
-    CONSTRAINT FK_Practicante_School FOREIGN KEY(codeSchool) REFERENCES School(codeSchool),
-    CONSTRAINT FK_Practicante_Career FOREIGN KEY(codeCareer) REFERENCES Career(codeCareer)
+    CONSTRAINT FK_Practicing_Supervisor FOREIGN KEY(codeSupervisor)
+        REFERENCES Supervisor(codeSupervisor),
+    CONSTRAINT FK_Practicante_Users FOREIGN KEY(codeUser) 
+        REFERENCES Users(codeUser),
+    CONSTRAINT FK_Practicante_School FOREIGN KEY(codeSchool) 
+        REFERENCES School(codeSchool),
+    CONSTRAINT FK_Practicante_Career FOREIGN KEY(codeCareer) 
+        REFERENCES Career(codeCareer)
 );
 
 CREATE TABLE IF NOT EXISTS Control(

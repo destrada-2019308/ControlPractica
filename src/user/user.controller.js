@@ -7,7 +7,6 @@ import PDFDocument from 'pdfkit'
 import { checkPassword, encrypt } from '../utils/validator.js'
 import { generateJwt } from '../utils/jwt.js'
 
-
 export const getUsers = async(req, res) =>{
     
 const conn = await pool.getConnection();
@@ -15,7 +14,7 @@ const conn = await pool.getConnection();
     try {
         const data = await conn.query(`SELECT * FROM users WHERE state = 'ENABLE';`)
         
-        if(data == undefined) return res.status(404).send({ message: 'Data is not found'})
+        if(data.length === 0) return res.status(404).send({ message: 'Data is not found'})
         
         return res.send({  data })
     } catch (err) {
@@ -23,16 +22,16 @@ const conn = await pool.getConnection();
       } finally {
         conn.end();
       }
-    }
+}
 
 export const createUser = async(req, res) =>{
     
 const conn = await pool.getConnection();
 
     try {
-        let { name, lastname, username, email, phone, password, role, estado } = req.body;
-        let allData =  [name, lastname, username, email, phone, password, role, estado]
-        let sendData = `\b Nombre: ${name}, Apellido: ${lastname}, Username: ${username}, Email: ${email}, Phone: ${phone}, Password: ${password}, Role: ${role} \b`
+        let { nameUser, lastname, username, email, phone, password, role, state } = req.body;
+        let allData =  [nameUser, lastname, username, email, phone, password, role, state]
+        let sendData = `\n Nombre: ${nameUser}, Apellido: ${lastname}, Username: ${username}, Email: ${email}, Phone: ${phone}, Password: ${password}, Role: ${role} \n`
         console.log(sendData);
         
         console.log('Esto es toda la data',allData);
@@ -57,7 +56,9 @@ const conn = await pool.getConnection();
             
             
         } else {
-            let result = await conn.query('INSERT INTO users (name, lastname, username, email, phone, password, role, estado) values (?,?,?,?,?,?,?,?);', [name, lastname, username, email, phone, newPassword, role, estado])
+            console.log(allData);
+            
+            let result = await conn.query('INSERT INTO users (nameUser, lastname, username, email, phone, password, role, state) values (?,?,?,?,?,?,?,?);', [nameUser, lastname, username, email, phone, newPassword, role, state])
             console.log('Esto es result',result);
             let to = email
             let subject = 'Text for default'
@@ -133,10 +134,10 @@ export const createAdminDF = async(req, res) =>{
             console.log('El usuario por defecto ya existe ');
         }else{
             const encryptPassword = await encrypt('ADMIN')
-            console.log(encryptPassword);
+            //console.log(encryptPassword);
             
 
-            const newUser = await conn.query(`INSERT INTO users (name, lastname, username, email, phone, password, role, state) values ('ADMIN','ADMIN','ADMIN', 'ADMIN@gmail.com','11111111',?, 'ADMIN', 'ENABLE')`, encryptPassword )
+            const newUser = await conn.query(`INSERT INTO users (nameUser, lastname, username, email, phone, password, role, state) values ('ADMIN','ADMIN','ADMIN', 'ADMIN@gmail.com','11111111',?, 'ADMIN', 'ENABLE')`, encryptPassword )
             
             //console.log(newUser);
             //console.log('Admin created successfully');
@@ -189,8 +190,6 @@ export const login = async(req, res) =>{
     }
 } 
 
-
-
 /* agregar un encargado */
 
 export const addAttendant = async(req, res) =>{
@@ -238,7 +237,7 @@ export const historial = async(req, res) => {
     try {
         const { id } = req.params;
         const allData = await conn.query(`
-            SELECT u.name, u.username, u.email, u.phone, u.role, u.estado, 
+            SELECT u.nameUser, u.username, u.email, u.phone, u.role, u.state, 
                    p.institucion, p.carrera, p.empresa, p.encargado,
                    pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
                    pc.hour_afternoon_entry, pc.hour_afternoon_exit, 
@@ -265,7 +264,7 @@ export const historial = async(req, res) => {
         doc.text(`Email: ${allData[0].email}`)
         doc.text(`Teléfono: ${allData[0].phone}`)
         doc.text(`Rol: ${allData[0].role}`)
-        doc.text(`Estado: ${allData[0].estado}`)
+        doc.text(`Estado: ${allData[0].state}`)
 
         doc.moveDown()
         doc.fontSize(16).text('Datos del Practicante:', { underline: true })
@@ -326,8 +325,8 @@ export const updateUser = async(req, res) =>{
     const conn = await pool.getConnection();
     try {
         let { id } = req.params
-        let { name, lastname, username, email, phone, role, estado } = req.body;
-        let data = await conn.query(`UPDATE users SET name = ?, lastname = ?, username = ?, email = ?, phone = ?, role = ?, estado = ? WHERE codeUser = ?`, [name, lastname, username, email, phone, role, estado, id])
+        let { nameUser, lastname, username, email, phone, role, state } = req.body;
+        let data = await conn.query(`UPDATE users SET nameUser = ?, lastname = ?, username = ?, email = ?, phone = ?, role = ?, state = ? WHERE codeUser = ?`, [nameUser, lastname, username, email, phone, role, state, id])
         BigInt.prototype.toJSON = function() { return this.toString()}
         return res.send({ data })
     } catch (error) {

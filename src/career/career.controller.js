@@ -22,12 +22,12 @@ export const getCareer = async (req, res) => {
 export const addCareer = async (req, res) => {
     const conn = await pool.getConnection();
     try {
-        let { name, description } = req.body;
-        const existingCareer = await conn.query(`SELECT * FROM Career WHERE name = ?`, name)
+        let { nameCareer, descriptionCareer } = req.body;
+        const existingCareer = await conn.query(`SELECT * FROM Career WHERE nameCareer = ?;`, nameCareer)
         BigInt.prototype.toJSON = function() { return this.toString()}
         if(existingCareer.length > 0) return res.status(404).send({ message: 'This career alredy exists' })
 
-        const data = await conn.query(`INSERT INTO career (name, description) VALUES (?,?) ;`, [name, description])
+        const data = await conn.query(`INSERT INTO career (nameCareer, descriptionCareer) VALUES (?,?) ;`, [nameCareer, descriptionCareer])
 
         if(data == undefined) return res.status(404).send({ message: 'Data is not found'})
             
@@ -46,9 +46,9 @@ export const updateCareer = async (req, res) => {
     try {
         let { id } = req.params;
 
-        let { name, description } = req.body
+        let { nameCareer, descriptionCareer } = req.body
         BigInt.prototype.toJSON = function() { return this.toString()}
-        let data = await conn.query(`UPDATE career SET name = ? , description = ? WHERE codeCareer = ?;`, [name, description, id])
+        let data = await conn.query(`UPDATE career SET nameCareer = ? , descriptionCareer = ? WHERE codeCareer = ?;`, [nameCareer, descriptionCareer, id])
 
         if(data == undefined) return res.status(404).send({ message: 'Data is not definded'})
 
