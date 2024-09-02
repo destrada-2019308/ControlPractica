@@ -11,6 +11,7 @@ import workstationRoutes from '../src/workstation/workstation.routes.js'
 import managmentsRoutes from '../src/managments/managments.routes.js'
 import supervisorRoutes from '../src/supervisor/supervisor.routes.js'
 import practicingRoutes from '../src/practicante/practicante.routes.js'
+import controlRoutes from '../src/control/control.routes.js'
 
 const app = express();
 config();
@@ -30,6 +31,7 @@ app.use('/workstation', workstationRoutes)
 app.use('/managments', managmentsRoutes)
 app.use('/supervisor', supervisorRoutes)
 app.use('/practicing', practicingRoutes)
+app.use('/control', controlRoutes)
 
 export const initServer = () => {
     app.listen(port, () => {

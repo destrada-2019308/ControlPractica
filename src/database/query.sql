@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS Control(
     hrs_aftn_entry TIME NOT NULL,
     hrs_aftn_exit TIME NOT NULL,
     description VARCHAR(125),
-    evaluations ENUM('EXCELENTE', 'BUENO', 'REGULAR', 'MALO'),
+    evaluations ENUM('EXCELENTE', 'BUENO', 'REGULAR', 'MALO', 'NULL'),
     PRIMARY KEY PK_codeControl(codeControl),
     CONSTRAINT FK_Control_Practicing FOREIGN KEY(codePracticing) REFERENCES Practicing(codePracticing)
 );

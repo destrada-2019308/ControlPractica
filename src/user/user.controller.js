@@ -12,7 +12,7 @@ export const getUsers = async(req, res) =>{
 const conn = await pool.getConnection();
 
     try {
-        const data = await conn.query(`SELECT * FROM users WHERE state = 'ENABLE';`)
+        const data = await conn.query(`SELECT * FROM users ;`)
         
         if(data.length === 0) return res.status(404).send({ message: 'Data is not found'})
         
@@ -32,22 +32,22 @@ const conn = await pool.getConnection();
         let { nameUser, lastname, username, email, phone, password, role, state } = req.body;
         let allData =  [nameUser, lastname, username, email, phone, password, role, state]
         let sendData = `\n Nombre: ${nameUser}, Apellido: ${lastname}, Username: ${username}, Email: ${email}, Phone: ${phone}, Password: ${password}, Role: ${role} \n`
-        console.log(sendData);
+        /*console.log(sendData);
         
         console.log('Esto es toda la data',allData);
-        
+        */
         //encriptar la password cuando se envie
         const newPassword = await encrypt(password)
-        
+        /*
         console.log(password);
         console.log(newPassword);
         console.log(email);
-        
+        */
         const [existingUser] = await conn.query(
             'SELECT * FROM users WHERE username = ? OR email = ?',
             [username, email]
         );
-        console.log(existingUser);
+        //console.log(existingUser);
         
         
         if (existingUser){
@@ -56,10 +56,10 @@ const conn = await pool.getConnection();
             
             
         } else {
-            console.log(allData);
+            //console.log(allData);
             
             let result = await conn.query('INSERT INTO users (nameUser, lastname, username, email, phone, password, role, state) values (?,?,?,?,?,?,?,?);', [nameUser, lastname, username, email, phone, newPassword, role, state])
-            console.log('Esto es result',result);
+            //console.log('Esto es result',result);
             let to = email
             let subject = 'Text for default'
             let text = `Estos son sus datos : \b ${sendData} \b Ingrese a nuestra pagina y loggeese con su username y su password `
@@ -96,7 +96,7 @@ const emailValidate = async(to, subject, text) =>{
       };
     
       // Send the email
-      console.log(mailOptions);
+      //console.log(mailOptions);
       
       try {
         let info = await transporter.sendMail(mailOptions);
@@ -175,7 +175,7 @@ export const login = async(req, res) =>{
         
             //console.log(token);
             
-            return res.send({ message: `Welcome ${userLogged.name}`, userLogged, token})
+            return res.send({ message: `Welcome ${userLogged.nameUser}`, userLogged, token})
             
 
         }
@@ -192,45 +192,6 @@ export const login = async(req, res) =>{
 
 /* agregar un encargado */
 
-export const addAttendant = async(req, res) =>{
-    const conn = await pool.getConnection();
-    try {
-        const { role, codeUser } = req.body;
-        console.log('Role:',role,'User:', codeUser);
-        
-        const user = await conn.query(`SELECT * FROM users `)
-
-        const data = await conn.query('UPDATE users SET role = ? where codeUser = ? ', [role, codeUser])
-        BigInt.prototype.toJSON = function() { return this.toString()}
-        return res.send({ data })
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({ message: error})
-    } finally{
-        conn.end()
-    }
-}
-
-
-export const getUserById = async(req, res) =>{
-    const conn = await pool.getConnection();
-    try {
-        let { id } = req.params
-        console.log('Id del usuario',id);
-        
-        const [user] = await conn.query(`SELECT * FROM users WHERE codeUser = ?`, id)
-        console.log(user);
-        
-        return res.send({ user })
-        
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({ message: error})
-    } finally{
-        conn.end()
-    }
-}
 
 export const historial = async(req, res) => {
     const conn = await pool.getConnection();
@@ -247,7 +208,7 @@ export const historial = async(req, res) => {
             JOIN Users u ON p.codeUser = u.codeUser 
             WHERE u.codeUser = ?;
         `, [id]);
-            console.log(allData)
+            //console.log(allData)
             
         if (!allData.length) {
             return res.status(404).send({ message: "No data found for the specified user" })

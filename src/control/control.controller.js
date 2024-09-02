@@ -1,182 +1,100 @@
 import pool from "../../configs/db.js";
 
-let conn = await pool.getConnection()
-
-export const getData = async(req, res) =>{
+/* Buscqueda de control por practicante */
+export const getControl = async (req, res) => {
     let conn = await pool.getConnection()
+
     try {
-        
-        
-        const data = await conn.query('SELECT * FROM practicControl')
 
-        //console.log(data);
+        let { id } = req.params;
+         
+        const get = await conn.query('SELECT * FROM control WHERE codePracticing = ?', id)
+
+        if (get.length === 0) return res.status(404).send({ message: 'Data is no found' })
+
+        return res.send({ get })
         
-        if(!data) return res.status(404).send({ message: 'Data is no found'})
-
-        return res.send({ data })
-
     } catch (error) {
         console.error(error);
         return error
-    }finally {
-         conn.end();
-      }
+    } finally {
+        conn.end();
+    }
 }
+/* Todos los datos de un practicante */
 
-export const createControl = async(req, res) =>{
+export const getAllData = async (req, res) => {
     let conn = await pool.getConnection()
     try {
-        const { date, hour_morning_entry, hour_morning_exit, hour_afternoon_entry, hour_afternoon_exit, description, codePracticante } = req.body;
-        const evaluations = '0'
-        console.log(codePracticante);
-        
-        const result = await conn.query(`INSERT INTO practicControl (date, 
-                                                            hour_morning_entry, 
-                                                            hour_morning_exit, 
-                                                            hour_afternoon_entry, 
-                                                            hour_afternoon_exit, 
-                                                            description, 
-                                                            evaluations, 
-                                                            codePracticante) 
-                                                            VALUES (?,?,?,?,?,?,?,?)`, 
-                                                            [date, hour_morning_entry, hour_morning_exit, hour_afternoon_entry, hour_afternoon_exit, description, evaluations, codePracticante] )
-
-        BigInt.prototype.toJSON = function() { return this.toString()}
-
-        return res.send({ result })
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({ message: error})
-    }finally {
-        conn.end();
-      }
-}
-
-export const getControlByUser = async(req, res) =>{
-    const conn = await pool.getConnection();
-    try {
         let { id } = req.params;
-        console.log(id);
-        
-        
-        if(id == undefined) return res.status(404).send({message: 'Es undefined'})
-        
-        let data = await conn.query(` select codePracticControl, 
-                                        DATE(date) as date, 
-                                        hour_morning_entry, 
-                                        hour_morning_exit, 
-                                        hour_afternoon_entry, 
-                                        hour_afternoon_exit, 
-                                        description, 
-                                        evaluations, 
-                                        codePracticante 
-                                        from practicControl 
-                                        where codePracticante = ?; `, [id])
-        
-        
-        
-        if(data == []) return res.status(404).send({ message: 'No hay data' })
-
-
-        data = data.map(row => ({
-            ...row,
-            date: row.date ? row.date.toISOString().split('T')[0] : null
-        }));
-
-    
-        //console.log(data[0].date);
-
-        return res.send({ data })
-
-    } catch (error) {
-        throw err;
-    }finally {
-         conn.end();
-      }
-}
-
-export const getControlManaClient = async(req, res) =>{
-    const conn = await pool.getConnection();
-    try {
-        let { id } = req.params;
-        //console.log(id);
-        
-        const data = await conn.query(`SELECT * FROM practicante where encargado = ?`, id)
-        //console.log(data);
-
-        
-        return res.send({ data })
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).send({ message: error })
-    } finally{
-        conn.end()
-    }
-}
-
-export const evaluation = async(req, res) =>{
-    const conn = await pool.getConnection();
-    try {
-        const {evaluations, codePracticante, codePracticControl} = req.body;
-        //console.log(evaluations, codePracticante, codePracticControl);
-        
-        
-        const data = await conn.query('UPDATE practicControl SET evaluations = ? where codePracticante = ? AND codePracticControl =?', [ evaluations, codePracticante, codePracticControl])
-        const result = await conn.query(`
-            SELECT u.name, u.username, u.email, u.phone, u.role, u.estado, 
-                   p.codePracticante, p.institucion, p.carrera, p.empresa, 
-                   pc.codePracticControl, pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
-                   pc.hour_afternoon_entry, pc.hour_afternoon_exit, 
-                   pc.description, pc.evaluations
-            FROM PracticControl pc
-            JOIN Practicante p ON pc.codePracticante = p.codePracticante
+        const get = await conn.query(`
+            SELECT 
+                u.codeUser, 
+                u.nameUser, 
+                u.role,
+                s.codeSupervisor,
+                su.nameUser AS supervisorName, 
+                sch.codeSchool,
+                sch.nameSchool, 
+                car.codeCareer,
+                car.nameCareer,
+                p.date_init, 
+                p.date_finish, 
+                p.practice_hrs, 
+                p.codePracticing
+            FROM Practicing p 
             JOIN Users u ON p.codeUser = u.codeUser
-            WHERE pc.codePracticante = ?
-            AND pc.codePracticControl = ?
-        `, [codePracticante, codePracticControl]);
-
-
+            JOIN Supervisor s ON p.codeSupervisor = s.codeSupervisor
+            JOIN Users su ON s.codeUser = su.codeUser  
+            JOIN School sch ON p.codeSchool = sch.codeSchool
+            JOIN Career car ON p.codeCareer = car.codeCareer WHERE codePracticing = ?`, id)
+  
         
 
-        BigInt.prototype.toJSON =  function() { return this.toString()}
+        if (get.length === 0) return res.status(404).send({ message: 'Data is no found' })
 
-        return res.send({ data, result })
+        return res.send({ get })
 
     } catch (error) {
-        console.error(error);
+        console.error(error)
         return res.status(500).send({ message: error })
-    }finally{
+    } finally {
         conn.end()
     }
 }
 
-export const allData = async(req, res) =>{
-    const conn = await pool.getConnection();
-     try {
-        const { id } = req.params
-        const data = await conn.query(`
-            SELECT u.codeUser, u.name, u.username, u.email, u.phone, u.role, u.estado, 
-                   p.codePracticante, p.institucion, p.carrera, p.empresa, p.encargado,
-                   pc.codePracticControl, pc.date, pc.hour_morning_entry, pc.hour_morning_exit, 
-                   pc.hour_afternoon_entry, pc.hour_afternoon_exit, 
-                   pc.description, pc.evaluations
-            FROM PracticControl pc
-            JOIN Practicante p ON pc.codePracticante = p.codePracticante
-            JOIN Users u ON p.codeUser = u.codeUser where p.encargado = ?;`, id)
-        
+export const addControl = async (req, res) => {
+    let conn = await pool.getConnection()
+    try {
+        const { date, hrs_mrn_entry, hrs_mrn_exit, hrs_aftn_entry, hrs_aftn_exit, description, codePracticing } = req.body;
+        /* Dejar por defecto una evaluacion  */
+        const evaluations = 'NULL'
+ 
+
+        const existingControl = await conn.query(`SELECT * FROM Control WHERE date = ?`, date)
+   
+        if (existingControl.length > 0) return res.status(400).send({ message: 'This control alredy exists' })
+
+        BigInt.prototype.toJSON = function () { return this.toString() }
+
+        const data = await conn.query(`INSERT INTO control (date, 
+                                                            hrs_mrn_entry, 
+                                                            hrs_mrn_exit, 
+                                                            hrs_aftn_entry,  
+                                                            hrs_aftn_exit, 
+                                                            description,
+                                                            evaluations, 
+                                                            codePracticing) 
+                                                            VALUES (?,?,?,?,?,?,?,?)`,
+            [date, hrs_mrn_entry, hrs_mrn_exit, hrs_aftn_entry, hrs_aftn_exit, description, evaluations, codePracticing])
+
         console.log(data);
-        
-
-        if(!data) return res.status(404).send({ message: 'No hay data' })
-
         return res.send({ data })
-     } catch (error) {
+
+    } catch (error) {
         console.error(error);
         return res.status(500).send({ message: error })
-     } finally{
-        conn.end()
-     }
+    } finally {
+        conn.end();
+    }
 }
-     

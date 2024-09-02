@@ -1,13 +1,11 @@
 import { Router } from "express";
-import { allData, createControl, evaluation, getControlByUser, getControlManaClient, getData } from "./control.controller.js";
+import {addControl, getAllData, getControl } from "./control.controller.js";
+import { validateJwt } from "../middlewares/validate_Jwt.js";
 
 const api = Router()
 
-api.get('/getData', getData)
-api.post('/createControl', createControl)
-api.get('/getControlByUser/:id', getControlByUser)
-api.put('/evaluation', evaluation)
-api.get('/getControlManaClient/:id', getControlManaClient)
-api.get('/allData/:id', allData)
+api.get('/getControl/:id', [validateJwt], getControl)
+api.get('/getAllData/:id', validateJwt, getAllData)
+api.post(`/addControl`, [validateJwt], addControl)
 
 export default api;
