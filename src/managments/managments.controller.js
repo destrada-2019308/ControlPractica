@@ -14,7 +14,10 @@ export const testConnection = async (req, res) => {
 export const getManagments = async (req, res) => {
     const conn = await pool.getConnection();
     try {
-        const get = await conn.query('SELECT * FROM managments')
+        const get = await conn.query(`SELECT m.codeManagments, m.nameManagments, m.descriptionManagments,
+                                            w.codeWorkstation, w.nameWorkstation
+                                         FROM managments m
+                                         JOIN Workstation w ON m.codeWorkstation = w.codeWorkstation`)
 
         if(get.length === 0) return res.status(404).send({ message: 'No hay datos'})
 
@@ -30,14 +33,14 @@ export const getManagments = async (req, res) => {
 export const addManagments = async (req, res) => {
     const conn = await pool.getConnection();
     try {
-        let { nameManagments, descriptionManagments } = req.body;
+        let { nameManagments, descriptionManagments, codeWorkstation } = req.body;
 
         const existingMana = await conn.query(`SELECT * FROM Managments WHERE nameManagments = ?`, nameManagments)
         BigInt.prototype.toJSON = function() {return this.toString()}
 
         if(existingMana.length > 0) return res.status(404).send({ message: 'This managments alredy exists'})
 
-        const data = await conn.query( 'INSERT INTO managments (nameManagments, descriptionManagments) VALUES (?,?);', [nameManagments, descriptionManagments])
+        const data = await conn.query( 'INSERT INTO managments (nameManagments, descriptionManagments, codeWorkstation) VALUES (?,?,?);', [nameManagments, descriptionManagments, codeWorkstation])
 
         return res.send({ message: 'Managments created successfully',data })
 

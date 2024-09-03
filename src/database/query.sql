@@ -41,7 +41,10 @@ CREATE TABLE IF NOT EXISTS Managments(
     codeManagments INT NOT NULL AUTO_INCREMENT,
     nameManagments VARCHAR(125),
     descriptionManagments VARCHAR(125),
-    PRIMARY KEY PK_codeManagments(codeManagments)
+    codeWorkstation INT NOT NULL,
+    PRIMARY KEY PK_codeManagments(codeManagments),
+    CONSTRAINT FK_Managments_Workstation FOREIGN KEY (codeWorkstation)
+        REFERENCES Workstation(codeWorkstation)
 );
 
 CREATE TABLE IF NOT EXISTS Supervisor(
@@ -65,7 +68,7 @@ CREATE TABLE IF NOT EXISTS Practicing(
     codePracticing INT AUTO_INCREMENT,
     date_init DATE NOT NULL,
     date_finish DATE NOT NULL,
-    practice_hrs INT NOT NULL,
+    practice_hrs DECIMAL NOT NULL,
     codeSupervisor INT NOT NULL,
     codeUser INT NOT NULL,
     codeSchool INT NOT NULL,
@@ -89,7 +92,7 @@ CREATE TABLE IF NOT EXISTS Control(
     hrs_mrn_exit TIME,
     hrs_aftn_entry TIME,
     hrs_aftn_exit TIME,
-    description VARCHAR(125),
+    description VARCHAR(625),
     evaluations ENUM('EXCELENTE', 'BUENO', 'REGULAR', 'MALO', 'NULL'),
     PRIMARY KEY PK_codeControl(codeControl),
     CONSTRAINT FK_Control_Practicing FOREIGN KEY(codePracticing) REFERENCES Practicing(codePracticing)
