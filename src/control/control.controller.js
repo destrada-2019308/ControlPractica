@@ -70,8 +70,9 @@ export const addControl = async (req, res) => {
         /* Dejar por defecto una evaluacion  */
         const evaluations = 'NULL'
  
-
-        const existingControl = await conn.query(`SELECT * FROM Control WHERE date = ?`, date)
+        console.log(date);
+  
+        const existingControl = await conn.query(`SELECT * FROM Control WHERE date = ? AND codePracticing = ?`, [date, codePracticing])
    
         if (existingControl.length > 0) return res.status(400).send({ message: 'This control alredy exists' })
 
@@ -96,5 +97,25 @@ export const addControl = async (req, res) => {
         return res.status(500).send({ message: error })
     } finally {
         conn.end();
+    }
+}
+
+export const evaluations = async (req, res) => {
+    let conn = await pool.getConnection()
+    try {
+        let { id }  = req.params;
+        let { evaluations } = req.body;
+        BigInt.prototype.toJSON = function() { return this.toString()}
+        console.log(id, evaluations);
+        
+        let data = await conn.query(`UPDATE Control SET evaluations = ? WHERE codeControl = ?`, [evaluations, id])
+
+        return res.send({ data })
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ message: error})
+    } finally{
+        conn.end()
     }
 }
