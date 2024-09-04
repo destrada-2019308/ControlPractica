@@ -26,7 +26,7 @@ export const getPracticing = async (req, res) => {
             JOIN School sch ON p.codeSchool = sch.codeSchool
             JOIN Career car ON p.codeCareer = car.codeCareer `)
 
-        if( get.length === 0 ) return res.status(404).send({ message: 'Data is not defined'})
+        //if( get.length === 0 ) return res.status(404).send({ message: 'Data is not defined'})
  
         return res.send({ get})
             
@@ -34,7 +34,7 @@ export const getPracticing = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error})
     } finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -42,13 +42,13 @@ export const getUserPracticing = async (req, res) => {
     const conn = await pool.getConnection()
     try {
         const get = await conn.query(`SELECT * FROM Users WHERE role = 'Practicing'`)
-        if(get.length === 0) return res.status(404).send({ message: 'Data is not found'})
+        if(get.length === 0) return res.status(404).send({ message: 'No hay practicantes'})
         return res.send({ get })
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: error})
     } finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -67,7 +67,7 @@ export const getPracticingByUser = async(req, res) =>{
         console.error(error);
         return res.status(500).send({ message: error})
     } finally {
-        conn.end()
+        conn.release()
     }
 }
 
@@ -91,7 +91,7 @@ export const addPracticing = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error})
     } finally {
-        conn.end()
+        conn.release()
     }
 }
 
@@ -110,7 +110,7 @@ export const updatePracticing = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error})
     } finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -135,6 +135,6 @@ export const getPracticBySuper = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error})
     } finally {
-        conn.end()
+        conn.release()
     }
 }

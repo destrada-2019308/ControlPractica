@@ -10,7 +10,7 @@ export const getControl = async (req, res) => {
 
         const get = await conn.query('SELECT * FROM control WHERE codePracticing = ?', id)
 
-        if (get.length === 0) return res.status(404).send({ message: 'Data is no found' })
+        //if (get.length === 0) return res.status(404).send({ message: 'Data is no found' })
 
         return res.send({ get })
 
@@ -18,7 +18,7 @@ export const getControl = async (req, res) => {
         console.error(error);
         return error
     } finally {
-        conn.end();
+        conn.release();
     }
 }
 /* Todos los datos de un practicante */
@@ -51,7 +51,7 @@ export const getAllData = async (req, res) => {
 
 
 
-        if (get.length === 0) return res.status(404).send({ message: 'Data is no found' })
+        //if (get.length === 0) return res.status(404).send({ message: 'Data is no found' })
 
         return res.send({ get })
 
@@ -59,7 +59,7 @@ export const getAllData = async (req, res) => {
         console.error(error)
         return res.status(500).send({ message: error })
     } finally {
-        conn.end()
+        conn.release()
     }
 }
 
@@ -68,7 +68,7 @@ export const addControl = async (req, res) => {
     try {
         const { date, hrs_mrn_entry, hrs_mrn_exit, hrs_aftn_entry, hrs_aftn_exit, description, codePracticing } = req.body;
         /* Dejar por defecto una evaluacion  */
-        const evaluations = 'NULL'
+        const evaluations = 'PENDIENTE'
 
         /*         
             sumatorita de horas diaris 
@@ -79,6 +79,8 @@ export const addControl = async (req, res) => {
         */
         console.log(hrs_mrn_entry, hrs_mrn_exit, hrs_aftn_entry, hrs_aftn_exit);
         
+        
+
         let h1 = hrs_mrn_entry.split(":");
         let h2 = hrs_mrn_exit.split(":");
         let h3 = hrs_aftn_entry.split(":");
@@ -120,7 +122,10 @@ export const addControl = async (req, res) => {
         console.log(hrs_restantes + ":" + min_restantes);
         
         //Hacemos el update a la tabla practicante para setear la nueva data
-
+         
+        if(newhrs == NaN){
+            return res.status(404).send({ message: 'Agrega un dato' })
+        }
         await conn.query(`UPDATE Practicing SET practice_hrs = ? WHERE codePracticing = ?;`, [newhrs, codePracticing])
   
         console.log(date);
@@ -158,7 +163,7 @@ export const addControl = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally {
-        conn.end();
+        conn.release();
     }
 }
 
@@ -178,6 +183,6 @@ export const evaluations = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally {
-        conn.end()
+        conn.release()
     }
 }

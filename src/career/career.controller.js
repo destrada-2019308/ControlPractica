@@ -7,7 +7,7 @@ export const getCareer = async (req, res) => {
     try {
         let get = await conn.query(`SELECT * FROM career;`)
 
-        if(get.length === 0) return res.status(404).send({ message: 'Data is not defined'})
+        //if(get.length === 0) return res.status(404).send({ message: 'Data is not defined'})
 
         return res.send({ get })
 
@@ -15,7 +15,7 @@ export const getCareer = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     }finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -37,7 +37,7 @@ export const addCareer = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     }finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -58,6 +58,6 @@ export const updateCareer = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally{
-        conn.end()
+        conn.release()
     }
 }

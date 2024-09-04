@@ -11,13 +11,13 @@ export const getSchool = async(req, res) =>{
         let get = await conn.query(`SELECT * FROM School;`)
 
         
-        if(get.length === 0) return res.status(404).send({message: 'Data is not found '})
+        //if(get.length === 0) return res.status(404).send({message: 'Data is not found '})
 
         return res.send({ get })
     } catch (error) {
         throw error;
     }finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -44,7 +44,7 @@ export const addSchool = async(req, res) =>{
         console.error(error);
         return res.status(500).send({ message: error })
     }finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -67,6 +67,6 @@ export const updateSchool = async(req, res) =>{
         console.error(error);
         return res.status(500).send({ message: error })
     }finally{
-        conn.end()
+        conn.release()
     }
 }

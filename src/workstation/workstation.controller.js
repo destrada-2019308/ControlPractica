@@ -8,7 +8,7 @@ export const getWorkstation = async (req, res) => {
     try {
         let get = await conn.query(`SELECT * FROM Workstation`) 
 
-        if(get.length === 0) return res.status(404).send({ message: 'Data is not found'})
+        //if(get.length === 0) return res.status(404).send({ message: 'Data is not found'})
 
         return res.send({ get })
 
@@ -16,7 +16,7 @@ export const getWorkstation = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -42,7 +42,7 @@ export const addWorkstation = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     }finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -63,6 +63,6 @@ export const updateWorkstation = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally{
-        conn.end()
+        conn.release()
     }
 }

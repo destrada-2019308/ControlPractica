@@ -7,14 +7,14 @@ export const getUserSupervisor = async (req, res) => {
     try {
         const get = await conn.query(`SELECT * FROM users WHERE state = 'ENABLE' AND role = 'SUPERVISOR';`)
         
-        if(get.length === 0) return res.status(404).send({ message: 'Data is not found'})
+        //if(get.length === 0) return res.status(404).send({ message: 'Data is not found'})
         
         return res.send({  get })
     } catch (error) {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -27,7 +27,7 @@ export const getSupervisor = async (req, res) => {
                                             JOIN Users u ON s.codeUser = u.codeUser
                                             JOIN Workstation w ON w.codeWorkstation = s.codeWkst`)
         
-        if(get.length === 0) return res.status(404).send({ message: 'Data is not found'})
+        //if(get.length === 0) return res.status(404).send({ message: 'Data is not found'})
         
         return res.send({ message: get, get})
         
@@ -35,7 +35,7 @@ export const getSupervisor = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -61,7 +61,7 @@ export const addSupervisor = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally{
-        conn.end()
+        conn.release()
     }
 }
 
@@ -84,7 +84,7 @@ export const updateSupervisor = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally{
-        conn.end()
+        conn.release()
     }
 }
 

@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS Users (
     email VARCHAR(125) UNIQUE NOT NULL,
     phone VARCHAR(8) UNIQUE NOT NULL,
     password VARCHAR(256) NOT NULL,
-    role ENUM('ADMIN', 'PRACTICING', 'SUPERVISOR', 'MANAGER') NOT NULL,
+    role ENUM('ADMIN', 'PRACTICING', 'SUPERVISOR' ) NOT NULL,
     state ENUM('ENABLE', 'DISABLED'),
     PRIMARY KEY PK_codeUser(codeUser)
 );
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS Practicing(
     codePracticing INT AUTO_INCREMENT,
     date_init DATE NOT NULL,
     date_finish DATE NOT NULL,
-    practice_hrs DECIMAL NOT NULL,
+    practice_hrs FLOAT NOT NULL,
     codeSupervisor INT NOT NULL,
     codeUser INT NOT NULL,
     codeSchool INT NOT NULL,
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS Control(
     hrs_aftn_entry TIME,
     hrs_aftn_exit TIME,
     description VARCHAR(625),
-    evaluations ENUM('EXCELENTE', 'BUENO', 'REGULAR', 'MALO', 'NULL'),
+    evaluations ENUM('EXCELENTE', 'BUENO', 'REGULAR', 'MALO', 'PENDIENTE'),
     PRIMARY KEY PK_codeControl(codeControl),
     CONSTRAINT FK_Control_Practicing FOREIGN KEY(codePracticing) REFERENCES Practicing(codePracticing)
 );

@@ -15,13 +15,13 @@ export const getUsers = async (req, res) => {
     try {
         const data = await conn.query(`SELECT * FROM users ;`)
 
-        if (data.length === 0) return res.status(404).send({ message: 'Data is not found' })
+        //if (data.length === 0) return res.status(404).send({ message: 'Data is not found' })
 
         return res.send({ data })
     } catch (err) {
         throw err;
     } finally {
-        conn.end();
+        conn.release();
     }
 }
 
@@ -75,7 +75,7 @@ export const createUser = async (req, res) => {
         console.error(err);
         return res.status(500).send({ error: err.message })
     } finally {
-        conn.end();
+        conn.release();
     }
 }
 
@@ -143,13 +143,15 @@ export const createAdminDF = async (req, res) => {
             //console.log(newUser);
             //console.log('Admin created successfully');
 
+            return res.send({ message: 'Se creo'})
         }
+        
 
     } catch (error) {
         console.error(error);
         return error
     } finally {
-        conn.end()
+        conn.release()
     }
 }
 
@@ -187,7 +189,7 @@ export const login = async (req, res) => {
         console.error(err);
         return res.status(500).send({ error: true, err })
     } finally {
-        conn.end
+        conn.release()
     }
 }
 
@@ -231,8 +233,13 @@ export const historial = async (req, res) => {
             return res.status(404).send({ message: "No data found for the specified user" });
         }
 
+        const pdfFolder = './histiorial'
+        if(!fs.existsSync(pdfFolder)){
+            fs.mkdirSync(pdfFolder)
+        }
+
         const doc = new PDFDocument({layout: 'landscape'});
-        const filePath = path.join( `historial_${id}.pdf`);
+        const filePath = path.join(pdfFolder, `historial_${id}.pdf`);
         doc.pipe(fs.createWriteStream(filePath));
 
         doc.fontSize(20).text(`Historial del Usuario: ${allData[0].nameUser}`, { align: 'center' });
@@ -308,6 +315,6 @@ export const updateUser = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally {
-        conn.end()
+        conn.release()
     }
 }
