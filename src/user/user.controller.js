@@ -189,7 +189,7 @@ export const login = async (req, res) => {
         console.error(err);
         return res.status(500).send({ error: true, err })
     } finally {
-        conn.release()
+        if (conn) conn.release()
     }
 }
 
@@ -298,7 +298,7 @@ export const historial = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error.message });
     } finally {
-        conn.release();
+        if (conn) conn.release();
     }
 };
 
@@ -315,6 +315,6 @@ export const updateUser = async (req, res) => {
         console.error(error);
         return res.status(500).send({ message: error })
     } finally {
-        conn.release()
+        if (conn) conn.release()
     }
 }
